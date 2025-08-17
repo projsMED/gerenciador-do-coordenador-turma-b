@@ -1,3 +1,13 @@
+<!-- ====== gerenciador_fila.html ====== -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gerenciador do Coordenador — Fila</title>
+
+  <!-- SortableJS para reordenar a fila -->
+
 <script>
 
 /*! Sortable 1.15.3 - MIT | git://github.com/SortableJS/Sortable.git */
@@ -5,960 +15,629 @@
 
 </script>
 
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-    <meta charset="UTF-8">
-    <title>Gerenciador do Coordenador</title>
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        
-        h1 {
-            font-family: 'Georgia', serif; 
-            color: #1e88e5; 
-            text-transform: uppercase; /
-            letter-spacing: 2px; 
-            font-weight: 700; 
-            text-align: center; 
-            margin-bottom: 20px; 
-            border-bottom: 2px solid #1e88e5; 
-            padding-bottom: 10px; 
-            width: fit-content; 
-        }
-        .container {
-            display: flex;
-            width: 99%;
-            gap: 20px;
-        }
-        .lista, .fila {
-            flex: 1;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            padding: 10px;
-            min-height: 300px;
-            background-color: #f9f9f9;
-            position: relative; 
-        }
-        .lista h2, .fila h2 {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        ul {
-            list-style-type: none;
-            padding: 0;
-        }
-        .lista li {
-            padding: 3px 5px; 
-            margin: 5px 0;
-            background-color: #f2f2f2;
-            border-radius: 4px;
-            display: flex;
-            align-items: center; 
-            transition: background-color 0.3s;
-            cursor: grab;
-        }
-        .lista li:hover {
-            background-color: #e0e0e0;
-        }
-        /* Classe para o nome */
-        .lista li .nome {
-            flex: 1; 
-            margin-right: 15px; /* Espaço fixo entre o nome e o contador de falas */
-            white-space: nowrap; /* Impede que o texto quebre em várias linhas */
-            overflow: hidden; /* Esconde o excesso de texto */
-            text-overflow: ellipsis;
-        }
-        /* Estilos para os itens da fila de permissão */
-        .fila li {
-            padding: 2px; /* Mantém tamanho padrão */
-            margin: 10px 0 5px 0; /* Espaço superior aumentado para o indicador "Próxima" */
-            background-color: #f2f2f2;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            transition: background-color 0.3s;
-            position: relative;
-            cursor: move;
-        }
-        .fila li.dragging {
-            opacity: 0.5;
-        }
-        .fila li.over {
-            border: 2px dashed #2196f3;
-        }
-        .fila li:hover {
-            background-color: #d0d0d0;
-        }
-        /* Container para remover botão e fala count à direita */
-        .fila-actions {
-            margin-left: auto; /* Empurra para a direita */
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .remove-btn {
-            background-color: red;
-            color: white;
-            border: none;
-            border-radius: 5px; /* Retângulo com bordas levemente arredondadas */
-            width: 120%; /* Largura ajustada */
-            height: 45px; /* O botão ocupará toda a altura da lista */
-            text-align: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            font-size: 12px;
-            /* Removed: margin-left: 1px; */
-        }
-
-        /* Estilo para a contagem de falas na lista da direita */
-        .fala-count-direita {
-            background-color: #e0e0e0; /* Cinza claro */
-            color: #555;
-            border-radius: 4px;
-            font-size: 14px;
-            padding: 2px 6px;
-            display: inline-block;
-			width: 100%; /* Largura ajustada */
-        }
-
-        /* Destaque para a primeira pessoa na fila */
-        .fila li.top {
-            background-color: #ffeb3b; /* Amarelo claro */
-            font-weight: bold;
-        }
-        /* Indicador "Próxima" fora da caixa do items */
-        .fila .proxima-indicador {
-            position: absolute;
-            top: -15px; /* Ajuste conforme necessário */
-            left: 50%;
-            transform: translateX(-50%);
-            background-color: #ff5722; /* Laranja */
-            color: white;
-            padding: 2px 6px;
-            border-radius: 4px;
-            font-size: 12px;
-            display: none; /* Apenas para o primeiro item */
-        }
-        .fila li.top .proxima-indicador {
-            display: block;
-        }
-
-        /* Destaque para a segunda pessoa na fila */
-        .fila li.second {
-            background-color: #c8e6c9; /* Verde claro */
-            font-weight: bold;
-        }
-
-        /* Estilos para os controles de fala */
-        .fala-controles {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            height: 100%; /* Ocupa toda a altura do item da lista */
-            /* Flex properties já ajustados */
-        }
-        .control {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 2px;
-        }
-        .add-fala, .remove-fala {
-            background-color: #4caf50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            padding: 10px 12px; /* Reduzido para diminuir tamanho dos botões */
-            cursor: pointer;
-            font-size: 18px; /* Fonte um pouco menor */
-            font-weight: bold;
-            height: auto;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 75px; /* Ajustado para melhor proporção */
-        }
-        .remove-fala {
-            background-color: #f44336;
-        }
-        .add-fala:hover {
-            background-color: #45a049;
-        }
-        .remove-fala:hover {
-            background-color: #e53935;
-        }
-        /* Estilo para a contagem de falas na lista da esquerda */
-        .fala-count-esquerda {
-            flex: 0 0 auto; /* Não permite que o elemento cresça ou encolha */
-            margin-right: 10px; /* Espaço fixo de 15px entre o contador e os controles */
-            text-align: center; /* Centraliza o texto dentro do contador */
-            width: 50px; /* Defina uma largura fixa adequada */
-            padding: 4px 8px; /* Reduzido para diminuir tamanho */
-            background-color: #2196f3; /* Azul */
-            color: white;
-            border-radius: 4px;
-            font-size: 14px; /* Fonte menor */
-            font-weight: bold;
-        }
-        /* Estilos para o indicador de posição na fila */
-        .posicao {
-            margin-right: 10px;
-            font-weight: bold;
-            font-size: 16px;
-            color: #333;
-            width: 30px;
-            text-align: right;
-        }
-        /* Botão de Resetar Dados */
-        .reset-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #ff9800; /* Laranja */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .reset-btn:hover {
-            background-color: #fb8c00;
-        }
-        /* Botão de Gerar Tabela de Falas */
-        .gerar-tabela-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #2196f3; /* Azul */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .gerar-tabela-btn:hover {
-            background-color: #1976d2;
-        }
-        /* Botão de Exportar CSV */
-        .exportar-csv-btn {
-            width: 100%;
-            padding: 10px;
-            background-color: #4caf50; /* Verde */
-            color: white;
-            border: none;
-            border-radius: 5px;
-            font-size: 18px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .exportar-csv-btn:hover {
-            background-color: #43a047;
-        }
-        /* Estilos para a Tabela de Falas */
-        .tabela-falas {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
-        .tabela-falas th, .tabela-falas td {
-            border: 1px solid #ccc;
-            padding: 8px;
-            text-align: center;
-        }
-        .tabela-falas th {
-            background-color: #f2f2f2;
-        }
-        .tabela-falas tr:nth-child(even) {
-            background-color: #fafafa;
-        }
-        .tabela-falas tr:hover {
-            background-color: #f1f1f1;
-        }
-        /* Feedback visual para drag-and-drop */
-        .fila li.over {
-            border: 2px dashed #2196f3;
-        }
-        /* Animação de piscada - Lista da Esquerda */
-        @keyframes blink-esquerda {
-            0% { background-color: #2196f3; }
-            50% { background-color: #4caf50; }
-            100% { background-color: #2196f3; }
-        }
-        .blink-esquerda {
-            animation: blink-esquerda 1s;
-        }
-        /* Animação de piscada - Lista da Direita */
-        @keyframes blink-direita {
-            0% { background-color: #e0e0e0; }
-            50% { background-color: #4caf50; }
-            100% { background-color: #e0e0e0; }
-        }
-        .blink-direita {
-            animation: blink-direita 1s;
-        }
-        /* Estilos para o Modal de Confirmação */
-        .modal {
-            display: none; /* Oculto por padrão */
-            position: fixed; /* Fixo na tela */
-            z-index: 1000; /* Fica sobre outros elementos */
-            left: 0;
-            top: 0;
-            width: 100%; /* Largura total */
-            height: 100%; /* Altura total */
-            overflow: auto; /* Permite rolagem se necessário */
-            background-color: rgba(0,0,0,0.4); /* Fundo semi-transparente */
-            justify-content: center; /* Centraliza horizontalmente */
-            align-items: center; /* Centraliza verticalmente */
-        }
-        .modal-content {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 400px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            animation: fadeIn 0.3s;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-50px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .modal-buttons {
-            margin-top: 20px;
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-        }
-        .modal-buttons button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-        .modal-buttons #modal-ok {
-            background-color: #4caf50;
-            color: white;
-        }
-        .modal-buttons #modal-ok:hover {
-            background-color: #45a049;
-        }
-        .modal-buttons #modal-cancel {
-            background-color: #f44336;
-            color: white;
-        }
-        .modal-buttons #modal-cancel:hover {
-            background-color: #e53935;
-        }
-    </style>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    h1 {
+      font-family: 'Georgia', serif;
+      color: #1e88e5;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-weight: 700;
+      text-align: center;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #1e88e5;
+      padding-bottom: 10px;
+      width: fit-content;
+    }
+    .container {
+      display: flex;
+      width: 99%;
+      gap: 20px;
+      max-width: 1100px;
+    }
+    .lista, .fila {
+      flex: 1;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      min-height: 300px;
+      background-color: #f9f9f9;
+      position: relative;
+    }
+    .lista h2, .fila h2 { text-align: center; margin-bottom: 10px; }
+    ul { list-style-type: none; padding: 0; }
+    .lista li {
+      padding: 3px 5px;
+      margin: 5px 0;
+      background-color: #f2f2f2;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s;
+      cursor: grab;
+    }
+    .lista li:hover { background-color: #e0e0e0; }
+    .lista li .nome {
+      flex: 1;
+      margin-right: 15px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .fila li {
+      padding: 2px;
+      margin: 10px 0 5px 0;
+      background-color: #f2f2f2;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      transition: background-color 0.3s;
+      position: relative;
+      cursor: move;
+    }
+    .fila li.dragging { opacity: 0.5; }
+    .fila li:hover { background-color: #d0d0d0; }
+    .fila-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .remove-btn {
+      background-color: red;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      width: 120%;
+      height: 45px;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    .fala-count-direita {
+      background-color: #e0e0e0;
+      color: #555;
+      border-radius: 4px;
+      font-size: 14px;
+      padding: 2px 6px;
+      display: inline-block;
+      width: 100%;
+    }
+    .fila li.top { background-color: #ffeb3b; font-weight: bold; }
+    .fila .proxima-indicador {
+      position: absolute;
+      top: -15px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #ff5722;
+      color: white;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      display: none;
+    }
+    .fila li.top .proxima-indicador { display: block; }
+    .fila li.second { background-color: #c8e6c9; font-weight: bold; }
+    .fala-controles { display: flex; gap: 10px; align-items: center; height: 100%; }
+    .control { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+    .add-fala, .remove-fala {
+      background-color: #4caf50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: bold;
+      height: auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 75px;
+    }
+    .remove-fala { background-color: #f44336; }
+    .add-fala:hover { background-color: #45a049; }
+    .remove-fala:hover { background-color: #e53935; }
+    .fala-count-esquerda {
+      flex: 0 0 auto;
+      margin-right: 10px;
+      text-align: center;
+      width: 50px;
+      padding: 4px 8px;
+      background-color: #2196f3;
+      color: white;
+      border-radius: 4px;
+      font-size: 14px;
+      font-weight: bold;
+    }
+    .posicao { margin-right: 10px; font-weight: bold; font-size: 16px; color: #333; width: 30px; text-align: right; }
+    .reset-btn, .gerar-tabela-btn, .exportar-csv-btn {
+      width: 100%;
+      padding: 10px;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 18px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    .reset-btn { background-color: #ff9800; }
+    .reset-btn:hover { background-color: #fb8c00; }
+    .gerar-tabela-btn { background-color: #2196f3; }
+    .gerar-tabela-btn:hover { background-color: #1976d2; }
+    .exportar-csv-btn { background-color: #4caf50; }
+    .exportar-csv-btn:hover { background-color: #43a047; }
+    .tabela-falas {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .tabela-falas th, .tabela-falas td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .tabela-falas th { background-color: #f2f2f2; }
+    .tabela-falas tr:nth-child(even) { background-color: #fafafa; }
+    .tabela-falas tr:hover { background-color: #f1f1f1; }
+    @keyframes blink-esquerda { 0% { background-color: #2196f3; } 50% { background-color: #4caf50; } 100% { background-color: #2196f3; } }
+    .blink-esquerda { animation: blink-esquerda 1s; }
+    @keyframes blink-direita { 0% { background-color: #e0e0e0; } 50% { background-color: #4caf50; } 100% { background-color: #e0e0e0; } }
+    .blink-direita { animation: blink-direita 1s; }
+    .modal { display:none; position:fixed; z-index:1000; left:0; top:0; width:100%; height:100%; overflow:auto; background-color:rgba(0,0,0,0.4); justify-content:center; align-items:center; }
+    .modal-content { background:#fff; padding:20px; border-radius:8px; width:90%; max-width:400px; text-align:center; box-shadow:0 5px 15px rgba(0,0,0,0.3); animation:fadeIn 0.3s; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(-50px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-buttons { margin-top:20px; display:flex; justify-content:center; gap:20px; }
+    .modal-buttons button { padding:10px 20px; border:none; border-radius:5px; cursor:pointer; font-size:16px; }
+    .modal-buttons #modal-ok { background-color:#4caf50; color:#fff; }
+    .modal-buttons #modal-ok:hover { background-color:#45a049; }
+    .modal-buttons #modal-cancel { background-color:#f44336; color:#fff; }
+    .modal-buttons #modal-cancel:hover { background-color:#e53935; }
+    #rt { max-width: 1100px; }
+    #rt h3 { color:#333; }
+    #pub-status { color:#555; }
+    code { background:#eee; padding:2px 4px; border-radius:4px; }
+  </style>
 </head>
 <body>
 
-    <h1>Gerenciador do Coordenador</h1>
-    <div class="container">
-        <!-- Lista de Nomes Disponíveis -->
-        <div class="lista">
-            <h2>Alunos</h2>
-            <ul id="nomes-lista">
-                <!-- Os nomes serão inseridos aqui pelo JavaScript -->
-            </ul>
-            <!-- Botão de Resetar Dados -->
-            <button id="reset-btn" class="reset-btn">Resetar Dados</button>
-            <!-- Botão de Gerar Tabela de Falas -->
-            <button id="gerar-tabela-btn" class="gerar-tabela-btn">Gerar Tabela de Falas</button>
-            <!-- Contêiner para a Tabela de Falas -->
-            <div id="tabela-falas-container"></div>
-        </div>
+  <h1>Gerenciador do Coordenador</h1>
 
-        <!-- Fila de Permissão -->
-        <div class="fila">
-            <h2>Fila de Ordem de Fala</h2>
-            <ul id="fila-lista">
-                <!-- Os nomes adicionados serão exibidos aqui -->
-            </ul>
-        </div>
+  <div class="container">
+    <!-- Lista de Nomes Disponíveis -->
+    <div class="lista">
+      <h2>Alunos</h2>
+      <ul id="nomes-lista"></ul>
+      <button id="reset-btn" class="reset-btn">Resetar Dados</button>
+      <button id="gerar-tabela-btn" class="gerar-tabela-btn">Gerar Tabela de Falas</button>
+      <div id="tabela-falas-container"></div>
     </div>
 
-    <!-- Modal de Confirmação -->
-    <div id="confirm-modal" class="modal">
-        <div class="modal-content">
-            <p id="modal-message">Deseja continuar?</p>
-            <div class="modal-buttons">
-                <button id="modal-ok">Sim</button>
-                <button id="modal-cancel">Não</button>
-            </div>
-        </div>
+    <!-- Fila de Permissão -->
+    <div class="fila">
+      <h2>Fila de Ordem de Fala</h2>
+      <ul id="fila-lista"></ul>
     </div>
+  </div>
 
-    <script>
-        // Lista inicial de nomes com contagem de falas
-        let nomes = [
-            { nome: "Beatriz Soares", falas: 0 },
-            { nome: "Felipe Segati", falas: 0 },
-            { nome: "Iago de Sousa", falas: 0 },
-            { nome: "João Nunes", falas: 0 },
-            { nome: "João Jacinto", falas: 0 },
-            { nome: "João Azevedo", falas: 0 },
-	    { nome: "Kayo Luan", falas: 0 },
-            { nome: "Letícia Paz", falas: 0 },
-	    { nome: "Luiz Fernando", falas: 0 },
-            { nome: "Maria Thallyta", falas: 0 },
-            { nome: "Pedro Gabriel", falas: 0 },
-            { nome: "Thiago Castro", falas: 0 },
-            { nome: "Victor Gabriel", falas: 0 }
-        ];
+  <!-- Modal de Confirmação -->
+  <div id="confirm-modal" class="modal">
+    <div class="modal-content">
+      <p id="modal-message">Deseja continuar?</p>
+      <div class="modal-buttons">
+        <button id="modal-ok">Sim</button>
+        <button id="modal-cancel">Não</button>
+      </div>
+    </div>
+  </div>
 
-        const nomesLista = document.getElementById('nomes-lista');
-        const filaLista = document.getElementById('fila-lista');
-        const resetBtn = document.getElementById('reset-btn');
-        const gerarTabelaBtn = document.getElementById('gerar-tabela-btn'); // Novo Botão
-        const tabelaFalasContainer = document.getElementById('tabela-falas-container'); // Novo Contêiner
+  <!-- ===== UI Realtime (código da fila) ===== -->
+  <section id="rt" style="margin-top:20px; width:100%;">
+    <h3>Transmissão em tempo real</h3>
+    <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <div> Código da fila: <code id="queue-code">—</code> </div>
+      <button id="copy-code" type="button">Copiar código</button>
+      <button id="regen-code" type="button">Gerar novo código</button>
+      <span id="pub-status" style="margin-left:auto;">offline</span>
+    </div>
+    <small>Compartilhe este código com quem vai acompanhar a fila.</small>
+  </section>
 
-        // Modal Elements
-        const confirmModal = document.getElementById('confirm-modal');
-        const modalMessage = document.getElementById('modal-message');
-        const modalOk = document.getElementById('modal-ok');
-        const modalCancel = document.getElementById('modal-cancel');
+  <!-- ========== Lógica principal do gerenciador (nomes, falas, fila) ========== -->
+  <script>
+    let nomes = [
+      { nome: "Beatriz Soares", falas: 0 },
+      { nome: "Felipe Segati", falas: 0 },
+      { nome: "Iago de Sousa", falas: 0 },
+      { nome: "João Nunes", falas: 0 },
+      { nome: "João Jacinto", falas: 0 },
+      { nome: "João Azevedo", falas: 0 },
+      { nome: "Kayo Luan", falas: 0 },
+      { nome: "Letícia Paz", falas: 0 },
+      { nome: "Luiz Fernando", falas: 0 },
+      { nome: "Maria Thallyta", falas: 0 },
+      { nome: "Pedro Gabriel", falas: 0 },
+      { nome: "Thiago Castro", falas: 0 },
+      { nome: "Victor Gabriel", falas: 0 }
+    ];
 
-        // Função para criar elementos de lista para a esquerda
-        function criarElementoNomesLI(pessoa) {
-            const li = document.createElement('li');
+    const nomesLista = document.getElementById('nomes-lista');
+    const filaLista = document.getElementById('fila-lista');
+    const resetBtn = document.getElementById('reset-btn');
+    const gerarTabelaBtn = document.getElementById('gerar-tabela-btn');
+    const tabelaFalasContainer = document.getElementById('tabela-falas-container');
 
-            // Nome do participante
-            const nomeContainer = document.createElement('span');
-            nomeContainer.textContent = pessoa.nome;
-            nomeContainer.classList.add('nome'); // Adiciona a classe 'nome'
+    const confirmModal = document.getElementById('confirm-modal');
+    const modalMessage = document.getElementById('modal-message');
+    const modalOk = document.getElementById('modal-ok');
+    const modalCancel = document.getElementById('modal-cancel');
 
-            // Contagem de falas (estilizada)
-            const falaCount = document.createElement('span');
-            falaCount.textContent = `Falas: ${pessoa.falas}`;
-            falaCount.classList.add('fala-count-esquerda');
+    function criarElementoNomesLI(pessoa) {
+      const li = document.createElement('li');
+      const nomeContainer = document.createElement('span');
+      nomeContainer.textContent = pessoa.nome;
+      nomeContainer.classList.add('nome');
 
-            // Controles de fala
-            const controles = document.createElement('div');
-            controles.classList.add('fala-controles');
+      const falaCount = document.createElement('span');
+      falaCount.textContent = `Falas: ${pessoa.falas}`;
+      falaCount.classList.add('fala-count-esquerda');
 
-            // Botão e label de adicionar fala
-            const controlAdd = document.createElement('div');
-            controlAdd.classList.add('control');
+      const controles = document.createElement('div');
+      controles.classList.add('fala-controles');
 
-            const addFalaBtn = document.createElement('button');
-            addFalaBtn.textContent = '+';
-            addFalaBtn.title = 'Adicionar Fala';
-            addFalaBtn.classList.add('add-fala');
-            addFalaBtn.onclick = (e) => {
-                e.stopPropagation(); // Evita que clique no li adicione à fila
-                confirmarAdicionarFala(pessoa.nome);
-            };
+      const controlAdd = document.createElement('div'); controlAdd.classList.add('control');
+      const addFalaBtn = document.createElement('button');
+      addFalaBtn.textContent = '+'; addFalaBtn.title='Adicionar Fala'; addFalaBtn.classList.add('add-fala');
+      addFalaBtn.onclick = (e)=>{ e.stopPropagation(); confirmarAdicionarFala(pessoa.nome); };
+      const addFalaLabel = document.createElement('span'); addFalaLabel.textContent='Adicionar fala'; addFalaLabel.style.fontSize='12px'; addFalaLabel.style.color='#333';
+      controlAdd.appendChild(addFalaBtn); controlAdd.appendChild(addFalaLabel);
 
-            const addFalaLabel = document.createElement('span');
-            addFalaLabel.textContent = 'Adicionar fala';
-            addFalaLabel.style.fontSize = '12px';
-            addFalaLabel.style.color = '#333';
+      const controlRemove = document.createElement('div'); controlRemove.classList.add('control');
+      const removeFalaBtn = document.createElement('button');
+      removeFalaBtn.textContent='-'; removeFalaBtn.title='Remover Fala'; removeFalaBtn.classList.add('remove-fala');
+      removeFalaBtn.onclick=(e)=>{ e.stopPropagation(); removerFala(pessoa.nome); };
+      const removeFalaLabel = document.createElement('span'); removeFalaLabel.textContent='Remover fala'; removeFalaLabel.style.fontSize='12px'; removeFalaLabel.style.color='#333';
+      controlRemove.appendChild(removeFalaBtn); controlRemove.appendChild(removeFalaLabel);
 
-            controlAdd.appendChild(addFalaBtn);
-            controlAdd.appendChild(addFalaLabel);
+      controles.appendChild(controlAdd); controles.appendChild(controlRemove);
 
-            // Botão e label de remover fala
-            const controlRemove = document.createElement('div');
-            controlRemove.classList.add('control');
+      li.appendChild(nomeContainer);
+      li.appendChild(falaCount);
+      li.appendChild(controles);
+      li.onclick = ()=> adicionarAFila(pessoa.nome);
+      return li;
+    }
 
-            const removeFalaBtn = document.createElement('button');
-            removeFalaBtn.textContent = '-';
-            removeFalaBtn.title = 'Remover Fala';
-            removeFalaBtn.classList.add('remove-fala');
-            removeFalaBtn.onclick = (e) => {
-                e.stopPropagation(); // Evita que clique no li adicione à fila
-                removerFala(pessoa.nome);
-            };
+    function criarElementoFilaLI(nome) {
+      const li = document.createElement('li');
+      li.setAttribute('data-nome', nome);
+      const posicaoSpan = document.createElement('span'); posicaoSpan.classList.add('posicao'); posicaoSpan.textContent='';
+      const nomeSpan = document.createElement('span'); nomeSpan.textContent = nome;
+      const filaActions = document.createElement('div'); filaActions.classList.add('fila-actions');
+      const falaCountDireita = document.createElement('span'); falaCountDireita.textContent=`Falas: ${obterFalas(nome)}`; falaCountDireita.classList.add('fala-count-direita');
+      const removeBtn = document.createElement('button'); removeBtn.textContent='Remover da fila'; removeBtn.classList.add('remove-btn'); removeBtn.onclick=()=> removerDaFila(li);
+      filaActions.appendChild(falaCountDireita); filaActions.appendChild(removeBtn);
+      const proximaIndicador = document.createElement('span'); proximaIndicador.classList.add('proxima-indicador'); proximaIndicador.textContent='Próximo';
+      li.appendChild(proximaIndicador); li.appendChild(posicaoSpan); li.appendChild(nomeSpan); li.appendChild(filaActions);
+      return li;
+    }
 
-            const removeFalaLabel = document.createElement('span');
-            removeFalaLabel.textContent = 'Remover fala';
-            removeFalaLabel.style.fontSize = '12px';
-            removeFalaLabel.style.color = '#333';
+    function obterFalas(nome) { const p = nomes.find(x=>x.nome===nome); return p ? p.falas : 0; }
 
-            controlRemove.appendChild(removeFalaBtn);
-            controlRemove.appendChild(removeFalaLabel);
+    function renderNomes() {
+      nomesLista.innerHTML='';
+      nomes.forEach(pessoa => { nomesLista.appendChild(criarElementoNomesLI(pessoa)); });
+    }
 
-            controles.appendChild(controlAdd);
-            controles.appendChild(controlRemove);
+    function adicionarFala(nome) {
+      const p = nomes.find(x=>x.nome===nome);
+      if (p) { p.falas += 1; atualizarFalaCount(nome); atualizarFalaCountDireita(nome); salvarDados(); piscarFalaCount(nome); }
+    }
 
-            li.appendChild(nomeContainer);
-            li.appendChild(falaCount);
-            li.appendChild(controles);
-
-            // Permite adicionar à fila ao clicar em qualquer parte, exceto nos botões
-            li.onclick = () => adicionarAFila(pessoa.nome);
-
-            return li;
+    async function removerFala(nome) {
+      const confirmar = await showConfirm(`Tem certeza que deseja remover uma fala de ${nome}?`);
+      if (confirmar) {
+        const p = nomes.find(x=>x.nome===nome);
+        if (p) {
+          if (p.falas > 0) {
+            p.falas -= 1; atualizarFalaCount(nome); atualizarFalaCountDireita(nome); salvarDados(); piscarFalaCount(nome);
+          } else { showAlert(`${nome} não possui falas a serem removidas.`); }
         }
+      }
+    }
 
-        // Função para criar elementos de lista para a fila (direita)
-        function criarElementoFilaLI(nome, isFila = false) {
-            const li = document.createElement('li');
-            li.setAttribute('data-nome', nome);
+    async function confirmarAdicionarFala(nome) {
+      const confirmar = await showConfirm(`Deseja realmente adicionar uma fala para ${nome}?`);
+      if (confirmar) adicionarFala(nome);
+    }
 
-            // Indicador de posição
-            const posicaoSpan = document.createElement('span');
-            posicaoSpan.classList.add('posicao');
-            posicaoSpan.textContent = ''; // Será preenchido depois
+    function adicionarAFila(nome) {
+      const li = criarElementoFilaLI(nome);
+      filaLista.appendChild(li);
+      atualizarDestaques(); atualizarPosicoes(); salvarDados();
+    }
 
-            // Nome do participante
-            const nomeSpan = document.createElement('span');
-            nomeSpan.textContent = nome;
+    async function removerDaFila(el) {
+      const nome = el.getAttribute('data-nome');
+      const addTalk = await showConfirm(`Deseja adicionar uma fala para ${nome}?`);
+      if (addTalk) adicionarFala(nome);
+      filaLista.removeChild(el);
+      atualizarDestaques(); atualizarPosicoes(); salvarDados();
+    }
 
-            // Container para ações à direita
-            const filaActions = document.createElement('div');
-            filaActions.classList.add('fila-actions');
+    function atualizarDestaques() {
+      const itens = Array.from(filaLista.getElementsByTagName('li'));
+      itens.forEach(i=> i.classList.remove('top','second'));
+      if (itens[0]) itens[0].classList.add('top');
+      if (itens[1]) itens[1].classList.add('second');
+    }
 
-            // Contagem de falas na direita
-            const falaCountDireita = document.createElement('span');
-            falaCountDireita.textContent = `Falas: ${obterFalas(nome)}`;
-            falaCountDireita.classList.add('fala-count-direita');
+    function atualizarPosicoes() {
+      const itens = Array.from(filaLista.getElementsByTagName('li'));
+      itens.forEach((item, idx)=>{
+        const pos = item.querySelector('.posicao'); pos.textContent = `${idx+1}º`;
+      });
+    }
 
-            // Adicionar botão de remoção
-            const removeBtn = document.createElement('button');
-            removeBtn.textContent = 'Remover da fila';
-            removeBtn.classList.add('remove-btn');
-            removeBtn.onclick = () => removerDaFila(li);
+    function salvarDados() {
+      const filaNomes = Array.from(filaLista.getElementsByTagName('li')).map(li => li.getAttribute('data-nome'));
+      localStorage.setItem('filaTutoria', JSON.stringify(filaNomes));
+      localStorage.setItem('falasTutoria', JSON.stringify(nomes));
+    }
 
-            filaActions.appendChild(falaCountDireita);
-            filaActions.appendChild(removeBtn);
+    function carregarDados() {
+      const falasSalvas = localStorage.getItem('falasTutoria');
+      if (falasSalvas) {
+        const arr = JSON.parse(falasSalvas);
+        arr.forEach((p, idx)=> { if (nomes[idx]) nomes[idx].falas = p.falas; });
+      }
+      const filaSalva = localStorage.getItem('filaTutoria');
+      if (filaSalva) {
+        JSON.parse(filaSalva).forEach(nome => filaLista.appendChild(criarElementoFilaLI(nome)));
+      }
+      renderNomes(); atualizarTodasFalas(); atualizarPosicoes(); atualizarDestaques(); inicializarSortable();
+    }
 
-            // Adicionar indicador "Próxima" apenas para o primeiro item
-            const proximaIndicador = document.createElement('span');
-            proximaIndicador.classList.add('proxima-indicador');
-            proximaIndicador.textContent = 'Próximo';
+    function atualizarTodasFalas() {
+      const lis = nomesLista.getElementsByTagName('li');
+      Array.from(lis).forEach(li => {
+        const nome = li.querySelector('.nome').textContent;
+        const span = li.querySelector('.fala-count-esquerda');
+        const p = nomes.find(x=>x.nome===nome);
+        span.textContent = `Falas: ${p.falas}`;
+      });
+      const filaLis = filaLista.getElementsByTagName('li');
+      Array.from(filaLis).forEach(li => {
+        const nome = li.getAttribute('data-nome');
+        const span = li.querySelector('.fala-count-direita');
+        const p = nomes.find(x=>x.nome===nome);
+        if (span) span.textContent = `Falas: ${p.falas}`;
+      });
+    }
 
-            li.appendChild(proximaIndicador);
-            li.appendChild(posicaoSpan);
-            li.appendChild(nomeSpan);
-            li.appendChild(filaActions);
+    function inicializarSortable() {
+      Sortable.create(filaLista, {
+        animation: 150,
+        ghostClass: 'dragging',
+        filter: '.remove-btn',
+        preventOnFilter: false,
+        onEnd: function () { atualizarDestaques(); atualizarPosicoes(); salvarDados(); }
+      });
+    }
 
-            return li;
+    async function resetarDados() {
+      const c1 = await showConfirm('Tem certeza que deseja resetar todos os dados?');
+      if (c1) {
+        const c2 = await showConfirm('Você tem certeza absoluta que deseja resetar todos os dados?');
+        if (c2) {
+          nomes = nomes.map(p => ({...p, falas: 0}));
+          filaLista.innerHTML = '';
+          renderNomes(); atualizarTodasFalas(); atualizarPosicoes(); atualizarDestaques();
+          localStorage.removeItem('filaTutoria'); localStorage.removeItem('falasTutoria');
+          tabelaFalasContainer.innerHTML = '';
+          showAlert('Todos os dados foram resetados com sucesso.');
+        } else { showAlert('Reset de dados cancelado.'); }
+      } else { showAlert('Reset de dados cancelado.'); }
+    }
+
+    function gerarTabelaFalas() {
+      tabelaFalasContainer.innerHTML = '';
+      const tabela = document.createElement('table'); tabela.classList.add('tabela-falas');
+      const thead = document.createElement('thead'); const trh = document.createElement('tr');
+      const thNome = document.createElement('th'); thNome.textContent='Nome';
+      const thFalas = document.createElement('th'); thFalas.textContent='Quantidade de Falas';
+      trh.appendChild(thNome); trh.appendChild(thFalas); thead.appendChild(trh); tabela.appendChild(thead);
+      const tbody = document.createElement('tbody');
+      nomes.forEach(p => { const tr=document.createElement('tr'); const tdN=document.createElement('td'); tdN.textContent=p.nome; const tdF=document.createElement('td'); tdF.textContent=p.falas; tr.appendChild(tdN); tr.appendChild(tdF); tbody.appendChild(tr); });
+      tabela.appendChild(tbody); tabelaFalasContainer.appendChild(tabela);
+      const exportBtn = document.createElement('button'); exportBtn.textContent='Exportar como CSV (para importar no Excel)'; exportBtn.classList.add('exportar-csv-btn'); exportBtn.onclick=exportarCSV; tabelaFalasContainer.appendChild(exportBtn);
+    }
+
+    function exportarCSV() {
+      const tabela = document.querySelector('.tabela-falas');
+      if (!tabela) { showAlert('Tabela não encontrada para exportação.'); return; }
+      let csvContent = ''; const rows = tabela.querySelectorAll('tr');
+      rows.forEach(row => {
+        const cols = row.querySelectorAll('th, td');
+        const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(';');
+        csvContent += rowData + '\r\n';
+      });
+      const bom = '\uFEFF'; csvContent = bom + csvContent;
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a'); const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url); link.setAttribute('download', 'tabela_falas.csv'); link.style.visibility='hidden';
+      document.body.appendChild(link); link.click(); document.body.removeChild(link);
+    }
+
+    resetBtn.addEventListener('click', resetarDados);
+    gerarTabelaBtn.addEventListener('click', gerarTabelaFalas);
+
+    function showConfirm(message) {
+      return new Promise((resolve) => {
+        modalMessage.textContent = message;
+        confirmModal.style.display = 'flex';
+        function handleOk() { resolve(true); cleanup(); }
+        function handleCancel() { resolve(false); cleanup(); }
+        function cleanup() { modalOk.removeEventListener('click', handleOk); modalCancel.removeEventListener('click', handleCancel); confirmModal.style.display = 'none'; }
+        modalOk.addEventListener('click', handleOk); modalCancel.addEventListener('click', handleCancel);
+      });
+    }
+    function showAlert(message) { alert(message); }
+    function piscarFalaCount(nome) { piscarFalaCountEsquerda(nome); piscarFalaCountDireita(nome); }
+    function piscarFalaCountEsquerda(nome) {
+      const lis = nomesLista.getElementsByTagName('li');
+      Array.from(lis).forEach(li => {
+        if (li.querySelector('.nome').textContent === nome) {
+          const falaSpan = li.querySelector('.fala-count-esquerda');
+          falaSpan.classList.add('blink-esquerda');
+          falaSpan.addEventListener('animationend', () => falaSpan.classList.remove('blink-esquerda'), { once:true });
         }
-
-        // Função para obter falas de um nome
-        function obterFalas(nome) {
-            const pessoa = nomes.find(p => p.nome === nome);
-            return pessoa ? pessoa.falas : 0;
+      });
+    }
+    function piscarFalaCountDireita(nome) {
+      const lis = filaLista.getElementsByTagName('li');
+      Array.from(lis).forEach(li => {
+        if (li.getAttribute('data-nome') === nome) {
+          const falaSpan = li.querySelector('.fala-count-direita');
+          falaSpan.classList.add('blink-direita');
+          falaSpan.addEventListener('animationend', () => falaSpan.classList.remove('blink-direita'), { once:true });
         }
+      });
+    }
+    window.onload = carregarDados;
 
-        // Popula a lista de nomes disponíveis
-        function renderNomes() {
-            nomesLista.innerHTML = ''; // Limpa a lista
-            nomes.forEach(pessoa => {
-                const li = criarElementoNomesLI(pessoa);
-                nomesLista.appendChild(li);
-            });
+    function atualizarFalaCount(nome) {
+      const lis = nomesLista.getElementsByTagName('li');
+      Array.from(lis).forEach(li => {
+        if (li.querySelector('.nome').textContent === nome) {
+          const falaSpan = li.querySelector('.fala-count-esquerda');
+          const pessoa = nomes.find(p => p.nome === nome);
+          falaSpan.textContent = `Falas: ${pessoa.falas}`;
         }
-
-        // Função para adicionar fala
-        function adicionarFala(nome) {
-            const pessoa = nomes.find(p => p.nome === nome);
-            if (pessoa) {
-                pessoa.falas += 1;
-                atualizarFalaCount(nome);
-                atualizarFalaCountDireita(nome);
-                salvarDados();
-                piscarFalaCount(nome);
-            }
+      });
+    }
+    function atualizarFalaCountDireita(nome) {
+      const lis = filaLista.getElementsByTagName('li');
+      Array.from(lis).forEach(li => {
+        if (li.getAttribute('data-nome') === nome) {
+          const falaSpan = li.querySelector('.fala-count-direita');
+          const pessoa = nomes.find(p => p.nome === nome);
+          falaSpan.textContent = `Falas: ${pessoa.falas}`;
         }
+      });
+    }
 
-        // Função para remover fala com confirmação via Modal
-        async function removerFala(nome) {
-            const confirmar = await showConfirm(`Tem certeza que deseja remover uma fala de ${nome}?`);
-            if (confirmar) {
-                const pessoa = nomes.find(p => p.nome === nome);
-                if (pessoa) {
-                    if (pessoa.falas > 0) {
-                        pessoa.falas -= 1;
-                        atualizarFalaCount(nome);
-                        atualizarFalaCountDireita(nome);
-                        salvarDados();
-                        piscarFalaCount(nome);
-                    } else {
-                        showAlert(`${nome} não possui falas a serem removidas.`);
-                    }
-                }
-            }
-        }
+    // ===== Expor a tabela completa para o script do Firebase (module) =====
+    window.getNomesFalas = () => nomes.map(p => ({ nome: p.nome, falas: p.falas }));
+  </script>
 
-        // Função para confirmar e adicionar fala via Modal
-        async function confirmarAdicionarFala(nome) {
-            const confirmar = await showConfirm(`Deseja realmente adicionar uma fala para ${nome}?`);
-            if (confirmar) {
-                adicionarFala(nome);
-            }
-        }
+  <!-- ========== Publicação em tempo real no Firebase (a cada 8s) ========== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-        // Função para adicionar um nome à fila
-        function adicionarAFila(nome) {
-            // **Removida a verificação de duplicatas**
-            const li = criarElementoFilaLI(nome, true);
-            filaLista.appendChild(li);
-            atualizarDestaques();
-            atualizarPosicoes();
-            salvarDados();
-        }
+    // *** SEU firebaseConfig ***
+  const firebaseConfig = {
+    apiKey: "AIzaSyDDbkeq1OjoVRpmuC6Lzb6dTXRhBcAhc3g",
+    authDomain: "gerenciador-do-coordenad-15c31.firebaseapp.com",
+    projectId: "gerenciador-do-coordenad-15c31",
+    storageBucket: "gerenciador-do-coordenad-15c31.firebasestorage.app",
+    messagingSenderId: "74319359402",
+    appId: "1:74319359402:web:89561c14ed16df97cdcfd3"
+  };
 
-        // Função para remover um nome da fila com opção de adicionar fala via Modal
-        async function removerDaFila(elemento) {
-            const nome = elemento.getAttribute('data-nome');
-            const adicionarFalaConfirm = await showConfirm(`Deseja adicionar uma fala para ${nome}?`);
-            if (adicionarFalaConfirm) {
-                adicionarFala(nome);
-            }
-            filaLista.removeChild(elemento);
-            atualizarDestaques();
-            atualizarPosicoes();
-            salvarDados();
-        }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
 
-        // Função para atualizar os destaques na fila
-        function atualizarDestaques() {
-            const itens = filaLista.getElementsByTagName('li');
+    const codeEl   = document.getElementById('queue-code');
+    const copyBtn  = document.getElementById('copy-code');
+    const regenBtn = document.getElementById('regen-code');
+    const statusEl = document.getElementById('pub-status');
 
-            // Remover classes anteriores
-            Array.from(itens).forEach(item => {
-                item.classList.remove('top', 'second');
-            });
+    function generateCode(len = 6) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let s = ""; for (let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
+      return s;
+    }
+    let currentCode = localStorage.getItem('queue_code') || generateCode();
+    function setCode(newCode) {
+      currentCode = (newCode || generateCode()).toUpperCase();
+      localStorage.setItem('queue_code', currentCode);
+      codeEl.textContent = currentCode;
+    }
+    setCode(currentCode);
+    copyBtn.onclick = () => navigator.clipboard.writeText(currentCode);
+    regenBtn.onclick = () => setCode(generateCode());
 
-            if (itens.length > 0) {
-                // Primeiro item
-                itens[0].classList.add('top');
-            }
+    // ===== SNAPSHOT: inclui posições + falas individuais e tabela completa
+    function buildLocalSnapshot() {
+      const list = Array.from(document.querySelectorAll('#fila-lista li'));
+      const positions = list.map((li, idx) => {
+        const nome = li.getAttribute('data-nome') || li.textContent.trim();
+        // tenta pegar falas a partir da função global do gerenciador
+        const all = (window.getNomesFalas ? window.getNomesFalas() : []);
+        const falasDoNome = all.find(x => x.nome === nome)?.falas ?? undefined;
+        return { nome, pos: idx + 1, falas: falasDoNome };
+      });
 
-            if (itens.length > 1) {
-                // Segundo item
-                itens[1].classList.add('second');
-            }
-        }
+      const falasTabela = (window.getNomesFalas ? window.getNomesFalas() : []);
 
-        // Função para atualizar as posições na fila
-        function atualizarPosicoes() {
-            const itens = filaLista.getElementsByTagName('li');
-            Array.from(itens).forEach((item, index) => {
-                const posicaoSpan = item.querySelector('.posicao');
-                posicaoSpan.textContent = `${index + 1}º`;
-            });
-        }
+      const payload = {
+        code: currentCode,
+        updatedAtMs: Date.now(),
+        positions,         // [{nome, pos, falas}]
+        falas: falasTabela // [{nome, falas}]
+      };
 
-        // Função para salvar dados no localStorage
-        function salvarDados() {
-            // Salvar a fila
-            const filaNomes = Array.from(filaLista.getElementsByTagName('li')).map(li => li.getAttribute('data-nome'));
-            localStorage.setItem('filaTutoria', JSON.stringify(filaNomes));
+      localStorage.setItem('filaSnapshotJSON', JSON.stringify(payload));
+      return payload;
+    }
 
-            // Salvar as falas
-            localStorage.setItem('falasTutoria', JSON.stringify(nomes));
-        }
+    // ===== Publica no Firestore
+    async function publish() {
+      if (!auth.currentUser) return;
+      try {
+        const payload = buildLocalSnapshot();
+        const ref = doc(db, 'queues', currentCode);
+        await setDoc(ref, {
+          code: currentCode,
+          positions: payload.positions,
+          falas: payload.falas,
+          public: true,
+          ownerUid: auth.currentUser.uid,
+          updatedAt: serverTimestamp()
+        }, { merge: true });
+        statusEl.textContent = `publicado • ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'erro ao publicar';
+      }
+    }
 
-        // Função para carregar dados do localStorage
-        function carregarDados() {
-            // Carregar as falas
-            const falasSalvas = localStorage.getItem('falasTutoria');
-            if (falasSalvas) {
-                const falasArray = JSON.parse(falasSalvas);
-                falasArray.forEach((pessoaSalva, index) => {
-                    nomes[index].falas = pessoaSalva.falas;
-                });
-            }
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        statusEl.textContent = 'conectado';
+        publish();
+        setInterval(publish, 8000); // a cada 8s
+      }
+    });
+    signInAnonymously(auth).catch(console.error);
 
-            // Carregar a fila
-            const filaSalva = localStorage.getItem('filaTutoria');
-            if (filaSalva) {
-                const filaArray = JSON.parse(filaSalva);
-                filaArray.forEach(nome => {
-                    const li = criarElementoFilaLI(nome, true);
-                    filaLista.appendChild(li);
-                });
-            }
-
-            renderNomes();
-            atualizarTodasFalas();
-            atualizarPosicoes();
-            atualizarDestaques();
-
-            // Inicializar SortableJS após carregar os dados
-            inicializarSortable();
-        }
-
-        // Função para atualizar todas as contagens de fala na lista de nomes
-        function atualizarTodasFalas() {
-            const lis = nomesLista.getElementsByTagName('li');
-            Array.from(lis).forEach(li => {
-                const nome = li.querySelector('.nome').textContent;
-                const falaSpan = li.querySelector('.fala-count-esquerda');
-                const pessoa = nomes.find(p => p.nome === nome);
-                falaSpan.textContent = `Falas: ${pessoa.falas}`;
-            });
-
-            // Atualizar contagens na fila também
-            const filaLis = filaLista.getElementsByTagName('li');
-            Array.from(filaLis).forEach(li => {
-                const nome = li.getAttribute('data-nome');
-                const falaSpanDireita = li.querySelector('.fala-count-direita');
-                const pessoa = nomes.find(p => p.nome === nome);
-                if (falaSpanDireita) {
-                    falaSpanDireita.textContent = `Falas: ${pessoa.falas}`;
-                }
-            });
-        }
-
-        // Função para inicializar SortableJS com filtro para ignorar botões de remover
-        function inicializarSortable() {
-            Sortable.create(filaLista, {
-                animation: 150,
-                ghostClass: 'dragging',
-                filter: '.remove-btn', // Ignora elementos com a classe 'remove-btn'
-                preventOnFilter: false, // Permite o evento de clique no botão
-                onEnd: function (evt) {
-                    atualizarDestaques();
-                    atualizarPosicoes();
-                    salvarDados();
-                },
-                // Opcional: evitar arrastar ao tocar em determinada área
-                // Isso ajuda em dispositivos touch
-                touchStartThreshold: 10
-            });
-        }
-
-        // Função para resetar dados com confirmações duplas via Modal
-        async function resetarDados() {
-            const primeiraConfirmacao = await showConfirm('Tem certeza que deseja resetar todos os dados?');
-            if (primeiraConfirmacao) {
-                const segundaConfirmacao = await showConfirm('Você tem certeza absoluta que deseja resetar todos os dados?');
-                if (segundaConfirmacao) {
-                    // Resetar lista de falas
-                    nomes = nomes.map(p => ({ ...p, falas: 0 }));
-
-                    // Limpar a fila de permissão
-                    filaLista.innerHTML = '';
-
-                    // Atualizar a interface
-                    renderNomes();
-                    atualizarTodasFalas();
-                    atualizarPosicoes();
-                    atualizarDestaques();
-
-                    // Limpar o localStorage
-                    localStorage.removeItem('filaTutoria');
-                    localStorage.removeItem('falasTutoria');
-                    // Limpar a tabela de falas, se existir
-                    tabelaFalasContainer.innerHTML = '';
-
-                    showAlert('Todos os dados foram resetados com sucesso.');
-                } else {
-                    showAlert('Reset de dados cancelado.');
-                }
-            } else {
-                showAlert('Reset de dados cancelado.');
-            }
-        }
-
-        // Função para gerar a tabela de falas
-        function gerarTabelaFalas() {
-            // Limpar tabela anterior, se existir
-            tabelaFalasContainer.innerHTML = '';
-
-            // Criar tabela
-            const tabela = document.createElement('table');
-            tabela.classList.add('tabela-falas');
-
-            // Criar cabeçalho
-            const thead = document.createElement('thead');
-            const cabecalhoRow = document.createElement('tr');
-
-            const thNome = document.createElement('th');
-            thNome.textContent = 'Nome';
-            const thFalas = document.createElement('th');
-            thFalas.textContent = 'Quantidade de Falas';
-
-            cabecalhoRow.appendChild(thNome);
-            cabecalhoRow.appendChild(thFalas);
-            thead.appendChild(cabecalhoRow);
-            tabela.appendChild(thead);
-
-            // Criar corpo da tabela
-            const tbody = document.createElement('tbody');
-
-            nomes.forEach(pessoa => {
-                const row = document.createElement('tr');
-
-                const tdNome = document.createElement('td');
-                tdNome.textContent = pessoa.nome;
-                const tdFalas = document.createElement('td');
-                tdFalas.textContent = pessoa.falas;
-
-                row.appendChild(tdNome);
-                row.appendChild(tdFalas);
-                tbody.appendChild(row);
-            });
-
-            tabela.appendChild(tbody);
-            tabelaFalasContainer.appendChild(tabela);
-
-            // Criar botão de exportar CSV
-            const exportarBtn = document.createElement('button');
-            exportarBtn.textContent = 'Exportar como CSV (para importar no Excel)';
-            exportarBtn.classList.add('exportar-csv-btn');
-            exportarBtn.onclick = exportarCSV;
-
-            tabelaFalasContainer.appendChild(exportarBtn);
-        }
-
-        // Função para exportar a tabela como CSV
-        function exportarCSV() {
-            const tabela = document.querySelector('.tabela-falas');
-            if (!tabela) {
-                showAlert('Tabela não encontrada para exportação.');
-                return;
-            }
-
-            let csvContent = '';
-            const rows = tabela.querySelectorAll('tr');
-
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('th, td');
-                // Alterar o delimitador para ponto e vírgula e adicionar aspas para garantir a compatibilidade
-                const rowData = Array.from(cols).map(col => `"${col.textContent.trim()}"`).join(';');
-                csvContent += rowData + '\r\n';
-            });
-
-            // Adicionar BOM para UTF-8
-            const bom = '\uFEFF';
-            csvContent = bom + csvContent;
-
-            // Criar um blob com o conteúdo CSV
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-
-            // Criar um link temporário para download
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'tabela_falas.csv');
-            link.style.visibility = 'hidden';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        // Adicionar evento de clique ao botão de reset
-        resetBtn.addEventListener('click', resetarDados);
-
-        // Adicionar evento de clique ao botão de gerar tabela de falas
-        gerarTabelaBtn.addEventListener('click', gerarTabelaFalas);
-
-        // Função para mostrar o modal de confirmação e retornar uma Promise
-        function showConfirm(message) {
-            return new Promise((resolve) => {
-                modalMessage.textContent = message;
-                confirmModal.style.display = 'flex';
-
-                // Função para lidar com a resposta
-                function handleOk() {
-                    resolve(true);
-                    cleanup();
-                }
-
-                function handleCancel() {
-                    resolve(false);
-                    cleanup();
-                }
-
-                // Função para limpar os event listeners e fechar o modal
-                function cleanup() {
-                    modalOk.removeEventListener('click', handleOk);
-                    modalCancel.removeEventListener('click', handleCancel);
-                    confirmModal.style.display = 'none';
-                }
-
-                // Adicionar event listeners
-                modalOk.addEventListener('click', handleOk);
-                modalCancel.addEventListener('click', handleCancel);
-            });
-        }
-
-        // Função para mostrar alertas personalizados
-        function showAlert(message) {
-            alert(message); // Você pode personalizar este alerta similar ao showConfirm se desejar
-        }
-
-        // Função para fazer a contagem de falas piscar na lista da esquerda e na direita
-        function piscarFalaCount(nome) {
-            piscarFalaCountEsquerda(nome);
-            piscarFalaCountDireita(nome);
-        }
-
-        function piscarFalaCountEsquerda(nome) {
-            const lis = nomesLista.getElementsByTagName('li');
-            Array.from(lis).forEach(li => {
-                if (li.querySelector('.nome').textContent === nome) {
-                    const falaSpan = li.querySelector('.fala-count-esquerda');
-                    falaSpan.classList.add('blink-esquerda');
-                    falaSpan.addEventListener('animationend', () => {
-                        falaSpan.classList.remove('blink-esquerda');
-                    }, { once: true });
-                }
-            });
-        }
-
-        function piscarFalaCountDireita(nome) {
-            const lis = filaLista.getElementsByTagName('li');
-            Array.from(lis).forEach(li => {
-                if (li.getAttribute('data-nome') === nome) {
-                    const falaSpan = li.querySelector('.fala-count-direita');
-                    falaSpan.classList.add('blink-direita');
-                    falaSpan.addEventListener('animationend', () => {
-                        falaSpan.classList.remove('blink-direita');
-                    }, { once: true });
-                }
-            });
-        }
-
-        // Inicializa ao carregar a página
-        window.onload = carregarDados;
-    </script>
-
-    <script>
-        // Função para atualizar a contagem de falas na lista de nomes (esquerda)
-        function atualizarFalaCount(nome) {
-            const lis = nomesLista.getElementsByTagName('li');
-            Array.from(lis).forEach(li => {
-                if (li.querySelector('.nome').textContent === nome) {
-                    const falaSpan = li.querySelector('.fala-count-esquerda');
-                    const pessoa = nomes.find(p => p.nome === nome);
-                    falaSpan.textContent = `Falas: ${pessoa.falas}`;
-                }
-            });
-        }
-
-        // Função para atualizar a contagem de falas na fila (direita)
-        function atualizarFalaCountDireita(nome) {
-            const lis = filaLista.getElementsByTagName('li');
-            Array.from(lis).forEach(li => {
-                if (li.getAttribute('data-nome') === nome) {
-                    const falaSpan = li.querySelector('.fala-count-direita');
-                    const pessoa = nomes.find(p => p.nome === nome);
-                    falaSpan.textContent = `Falas: ${pessoa.falas}`;
-                }
-            });
-        }
-    </script>
-
+    // Re-publica quando a fila muda (drag, add, remove, ou texto/contagem)
+    const obs = new MutationObserver(() => publish());
+    obs.observe(document.getElementById('fila-lista'), {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  </script>
 </body>
 </html>
