@@ -562,6 +562,25 @@
     const regenBtn = document.getElementById('regen-code');
     const statusEl = document.getElementById('pub-status');
 
+    // --- Disparo imediato com atraso de 3s (e reintenta até autenticar) ---
+let earlyTimer = null;
+
+function publishAfterAuth() {
+  // Se ainda não autenticou anonimamente, tenta de novo em 250ms
+  if (auth.currentUser) {
+    publish();
+  } else {
+    setTimeout(publishAfterAuth, 250);
+  }
+}
+
+/** agenda um publish em delayMs (padrão 3s); reinicia se já houver outro agendado */
+function scheduleEarlyPublish(delayMs = 3000) {
+  clearTimeout(earlyTimer);
+  earlyTimer = setTimeout(publishAfterAuth, delayMs);
+}
+
+
     function generateCode(len = 6) {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let s = ""; for (let i=0;i<len;i++) s += chars[Math.floor(Math.random()*chars.length)];
@@ -574,8 +593,12 @@
       codeEl.textContent = currentCode;
     }
     setCode(currentCode);
+    scheduleEarlyPublish(3000);  // publica 3s após iniciar/recarregar
     copyBtn.onclick = () => navigator.clipboard.writeText(currentCode);
-    regenBtn.onclick = () => setCode(generateCode());
+    regenBtn.onclick = () => {
+  setCode(generateCode());
+  scheduleEarlyPublish(3000); // publica 3s após gerar novo código
+};
 
     // ===== SNAPSHOT: inclui posições + falas individuais e tabela completa
     function buildLocalSnapshot() {
