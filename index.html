@@ -626,7 +626,7 @@
       if (user) {
         statusEl.textContent = 'conectado';
         publish();
-        setInterval(publish, 8000); // a cada 8s
+        setInterval(publish, 60000); // a cada 60s
       }
     });
     signInAnonymously(auth).catch(console.error);
